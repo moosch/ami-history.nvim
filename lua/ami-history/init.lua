@@ -43,6 +43,9 @@ return {
     -- Where sessions are stored. nil = stdpath("data")/ami (out of your repos);
     -- "" = each project's own ./.ami/sessions.
     session_dir = nil,
+    -- Which side :AmiTree docks on: "left" | "right". nil = auto (opposite the chat
+    -- panel, so a floating chat never overlaps the tree).
+    tree_side = nil,
   },
 
   commands = {

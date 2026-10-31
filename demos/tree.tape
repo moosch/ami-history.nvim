@@ -35,8 +35,8 @@ Type ":AmiTree"
 Enter
 Sleep 3s
 
-# --- focus the tree, jump to the other branch's tip (n4), switch to it ---
-Type ":wincmd l"
+# --- focus the tree (docked left, opposite the chat), jump to n4, switch to it ---
+Type ":wincmd h"
 Enter
 Sleep 1s
 Type "4G"

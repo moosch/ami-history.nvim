@@ -101,12 +101,24 @@ local function ensure_buf()
   vim.keymap.set("n", "q", M.close, opts)
 end
 
+-- Which side to dock the tree on. Default: the opposite side from the chat panel,
+-- so a floating chat (which draws on top of splits) never overlaps the tree.
+-- Override with history.tree_side = "left"|"right".
+local function tree_side()
+  local side = A and A.config and A.config.tree_side
+  if side == "left" or side == "right" then
+    return side
+  end
+  local pos = ((require("ami.config").options.chat or {}).ui or {}).position or "right"
+  return (pos == "left") and "right" or "left"
+end
+
 local function show_win()
   if M.win and vim.api.nvim_win_is_valid(M.win) then
     return
   end
   local cur = vim.api.nvim_get_current_win()
-  vim.cmd("botright vsplit")
+  vim.cmd(tree_side() == "left" and "topleft vsplit" or "botright vsplit")
   M.win = vim.api.nvim_get_current_win()
   vim.api.nvim_win_set_buf(M.win, M.buf)
   vim.api.nvim_win_set_width(M.win, math.max(48, math.floor(vim.o.columns * 0.35)))

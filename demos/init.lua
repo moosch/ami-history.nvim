@@ -37,8 +37,8 @@ local endpoint = os.getenv("AMI_ENDPOINT") or "http://localhost:1234/v1"
 require("ami").setup({
   model = { endpoint = endpoint, model = os.getenv("AMI_CHAT_MODEL") or "qwen3-coder" },
   history = { session_dir = hist_dir },
-  -- Dock the chat panel on the LEFT so it doesn't overlap the tree's right split.
-  chat = { ui = { position = "left", width = 0.42 } },
+  -- Default (right-docked) chat; :AmiTree auto-docks opposite it (left), so they
+  -- don't overlap.
   extensions = { require("ami-chat"), require("ami-history") },
 })
 

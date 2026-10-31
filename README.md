@@ -70,6 +70,7 @@ Config lives under `history` in ami's `setup()`:
 | Key | Default | Meaning |
 | --- | --- | --- |
 | `session_dir` | `nil` | where sessions are stored. `nil` = `stdpath("data")/ami/<project>/sessions/` (out of your repos); `""` = each project's own `./.ami/sessions/` (add `.ami/` to your global gitignore) |
+| `tree_side` | `nil` | which side `:AmiTree` docks on: `"left"` / `"right"`. `nil` = auto — the opposite side from the chat panel, so a floating chat never overlaps the tree |
 
 ## How it works
 

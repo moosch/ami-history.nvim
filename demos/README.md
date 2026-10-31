@@ -19,6 +19,6 @@ git add demos/tree.gif && git commit -m "docs: update demo gif"
 ```
 
 `demos/init.lua` loads **ami core** (`../ami.nvim` or `../ai-harness`, or `$AMI_CORE`),
-**ami-chat.nvim** (`../ami-chat.nvim`), and this extension; it docks the chat panel on
-the left so it doesn't overlap the tree's right-hand split. Requires `vhs`
-(`brew install vhs`).
+**ami-chat.nvim** (`../ami-chat.nvim`), and this extension with default settings — the
+chat panel is right-docked and `:AmiTree` auto-docks opposite it (left), so they don't
+overlap. Requires `vhs` (`brew install vhs`).
