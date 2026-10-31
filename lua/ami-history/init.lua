@@ -107,5 +107,19 @@ return {
     if open then
       vim.keymap.set("n", open, function() tree.open(false) end, { desc = "ami: open the conversation tree" })
     end
+
+    api.health(function(report)
+      if base == "" then
+        report.info("sessions: per-project ./.ami/sessions")
+      else
+        report.info("session dir: " .. base)
+        vim.fn.mkdir(base, "p")
+        if vim.fn.isdirectory(base) == 1 and vim.fn.filewritable(base) == 2 then
+          report.ok("session dir writable")
+        else
+          report.warn("session dir not writable: " .. base)
+        end
+      end
+    end)
   end,
 }
