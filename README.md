@@ -71,6 +71,14 @@ Config lives under `history` in ami's `setup()`:
 | --- | --- | --- |
 | `session_dir` | `nil` | where sessions are stored. `nil` = `stdpath("data")/ami/<project>/sessions/` (out of your repos); `""` = each project's own `./.ami/sessions/` (add `.ami/` to your global gitignore) |
 | `tree_side` | `nil` | which side `:AmiTree` docks on: `"left"` / `"right"`. `nil` = auto — the opposite side from the chat panel, so a floating chat never overlaps the tree |
+| `keymaps.switch` | `"<CR>"` | switch the active branch to the node under the cursor |
+| `keymaps.summarize` | `"s"` | summarize the path up to the node |
+| `keymaps.refresh` | `"r"` | reload the tree |
+| `keymaps.close` | `"q"` | close the tree window |
+| `keymaps.open` | `nil` | optional global normal-mode map for `:AmiTree` (e.g. `"<leader>at"`) |
+
+Each `keymaps.*` value is a string, a list of strings, or `false` to disable it.
+(You can also `vim.keymap.set` the `:AmiTree` command yourself.)
 
 ## How it works
 

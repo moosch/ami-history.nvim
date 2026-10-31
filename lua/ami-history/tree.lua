@@ -86,6 +86,14 @@ local function build_lines(data)
   return lines, map, by_id
 end
 
+-- Normalize a config key (string, list, or nil/false) to a list of lhs strings.
+local function keys(v)
+  if not v then
+    return {}
+  end
+  return type(v) == "table" and v or { v }
+end
+
 local function ensure_buf()
   if M.buf and vim.api.nvim_buf_is_valid(M.buf) then
     return
@@ -94,11 +102,18 @@ local function ensure_buf()
   vim.bo[M.buf].bufhidden = "hide"
   vim.bo[M.buf].filetype = "ami-tree"
   vim.api.nvim_buf_set_name(M.buf, "ami://tree")
+
+  local km = (A and A.config and A.config.keymaps) or {}
   local opts = { buffer = M.buf, nowait = true, silent = true }
-  vim.keymap.set("n", "<CR>", M.switch, opts)
-  vim.keymap.set("n", "s", M.summarize, opts)
-  vim.keymap.set("n", "r", function() M.open() end, opts)
-  vim.keymap.set("n", "q", M.close, opts)
+  local function map(lhs, rhs)
+    for _, k in ipairs(keys(lhs)) do
+      vim.keymap.set("n", k, rhs, opts)
+    end
+  end
+  map(km.switch, M.switch)
+  map(km.summarize, M.summarize)
+  map(km.refresh, function() M.open() end)
+  map(km.close, M.close)
 end
 
 -- Which side to dock the tree on. Default: the opposite side from the chat panel,

@@ -46,6 +46,15 @@ return {
     -- Which side :AmiTree docks on: "left" | "right". nil = auto (opposite the chat
     -- panel, so a floating chat never overlaps the tree).
     tree_side = nil,
+    -- In-tree keys (each a string, a list of strings, or false to disable).
+    -- `open` optionally maps :AmiTree globally (normal mode); nil = don't.
+    keymaps = {
+      switch = "<CR>",     -- switch the active branch to the node under the cursor
+      summarize = "s",     -- summarize the path up to the node
+      refresh = "r",       -- reload the tree
+      close = "q",         -- close the tree window
+      open = nil,          -- e.g. "<leader>at" to map :AmiTree globally
+    },
   },
 
   commands = {
@@ -92,5 +101,11 @@ return {
         return path_messages(store, store:load(root, session_id))
       end,
     })
+
+    -- Optional global mapping for opening the tree.
+    local open = (api.config.keymaps or {}).open
+    if open then
+      vim.keymap.set("n", open, function() tree.open(false) end, { desc = "ami: open the conversation tree" })
+    end
   end,
 }
