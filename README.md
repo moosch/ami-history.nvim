@@ -13,6 +13,16 @@ Because it's just a provider, you can swap it for a fancier memory later (semant
 search, summarizing memory, …) by registering a different `history` provider — no
 change to ami-chat.
 
+## Demo
+
+The conversation tree — switch to a different branch and the transcript
+re-materializes for it (`*` = head, `|` = active path, `~` = collapsed):
+
+![conversation tree demo](demos/tree.gif)
+
+> Rendered from [`demos/tree.tape`](demos/tree.tape); see
+> [`demos/README.md`](demos/README.md) to (re)generate it (no LM Studio needed).
+
 ## Requirements
 
 - [ami.nvim](https://github.com/moosch/ami.nvim) — the runtime.
