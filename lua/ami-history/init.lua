@@ -91,6 +91,28 @@ return {
       end
     end)
 
+    -- Contribute chat slash-commands. /compact (alias /compress) summarizes the
+    -- conversation so far into one summary, so future turns carry the summary
+    -- instead of every prior message — shrinking the context the model receives.
+    -- Reduction takes effect on the next turn (the transcript scrollback is left
+    -- as-is as a human-readable log). Available only while ami-history is loaded.
+    local function compact(ctx)
+      ctx.append("\n\n_Compacting the conversation… (summarizing earlier turns)_\n")
+      tree.summarize_path(nil, function(ok, msg)
+        if ok then
+          ctx.append("\n_✓ " .. msg .. " — future turns will use it instead of the full history._\n")
+        else
+          ctx.append("\n_Compact: " .. msg .. "_\n")
+        end
+      end)
+    end
+    api.on("chat.commands", function()
+      return {
+        compact = { desc = "Summarize earlier turns into one summary to shrink future context", fn = compact },
+        compress = { desc = "Alias for /compact", fn = compact },
+      }
+    end)
+
     -- Supply prior-turn context for the next request.
     api.provide("history", {
       messages = function(session_id)

@@ -201,26 +201,38 @@ function M.switch()
   vim.notify("ami: switched to branch at " .. id, vim.log.levels.INFO)
 end
 
---- Summarize the path up to the node under the cursor (shrinks future context).
-function M.summarize()
-  local id = node_under_cursor()
-  if not id then
-    return
-  end
+--- Summarize the active path up to `boundary_id` (nil = the head, i.e. the whole
+--- conversation), collapsing it into one summary so future requests carry the
+--- summary instead of every turn. Does no UI itself — `cb(ok, message)` reports the
+--- outcome so callers (the tree's `s` key, chat's /compact) render it their own way.
+---@param boundary_id string|nil
+---@param cb fun(ok: boolean, message: string)
+function M.summarize_path(boundary_id, cb)
+  cb = cb or function() end
   local root, session = get_current()
   if not root then
-    return
+    return cb(false, "no active session yet")
   end
   local sess = store:load(root, session)
-  local nodes = store:path_nodes(sess, id)
-  local convo = {}
+  local boundary = boundary_id or sess.head
+  if not boundary or boundary == "" then
+    return cb(false, "nothing to summarize yet")
+  end
+
+  local nodes = store:path_nodes(sess, boundary)
+  local convo, folding = {}, 0
   for _, n in ipairs(nodes) do
+    if not n.collapsed then
+      folding = folding + 1
+    end
     local content = (n.collapsed and n.summary and n.summary ~= "") and n.summary or n.content
     convo[#convo + 1] = ("%s: %s"):format(n.role, content)
   end
+  if folding == 0 then
+    return cb(false, "already compacted — nothing new to fold")
+  end
 
   local eff = A.models.effective("chat")
-  vim.notify("ami: summarizing up to " .. id .. "…", vim.log.levels.INFO)
   local summary = {}
   A.client.stream_chat(eff.endpoint, {
     model = eff.model,
@@ -232,16 +244,31 @@ function M.summarize()
     on_token = function(c) summary[#summary + 1] = c end,
     on_done = function()
       local text = vim.trim(table.concat(summary))
-      local ok, err = store:apply_summary(root, session, id, text)
+      local ok, err = store:apply_summary(root, session, boundary, text)
       if not ok then
-        vim.notify("ami: " .. tostring(err), vim.log.levels.ERROR)
-        return
+        return cb(false, tostring(err))
       end
-      M.open(true)
-      vim.notify("ami: summarized up to " .. id, vim.log.levels.INFO)
+      cb(true, ("compacted %d message(s) into a summary"):format(folding))
     end,
-    on_error = function(e) vim.notify("ami: summarize failed — " .. tostring(e), vim.log.levels.ERROR) end,
+    on_error = function(e) cb(false, "summarize failed — " .. tostring(e)) end,
   })
+end
+
+--- Summarize the path up to the node under the cursor (shrinks future context).
+function M.summarize()
+  local id = node_under_cursor()
+  if not id then
+    return
+  end
+  vim.notify("ami: summarizing up to " .. id .. "…", vim.log.levels.INFO)
+  M.summarize_path(id, function(ok, msg)
+    if ok then
+      M.open(true)
+      vim.notify("ami: " .. msg, vim.log.levels.INFO)
+    else
+      vim.notify("ami: " .. msg, vim.log.levels.ERROR)
+    end
+  end)
 end
 
 return M

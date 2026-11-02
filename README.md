@@ -63,6 +63,12 @@ the current session (no persistence, no branching).
 In the tree, `*` marks the head, `|` a node on the active path, `~` a collapsed
 (summarized) node; `A`/`U` is assistant/user.
 
+It also adds the **`/compact`** (alias `/compress`) chat slash-command: typed into the
+[ami-chat](https://github.com/moosch/ami-chat.nvim) input, it summarizes the whole
+conversation so far into one summary — the same non-destructive fold as `s` in the
+tree, but up to the latest turn — so future turns carry the summary instead of every
+message. The originals stay on disk (switch back to a pre-summary branch in `:AmiTree`).
+
 ## Configuration
 
 Config lives under `history` in ami's `setup()`:
