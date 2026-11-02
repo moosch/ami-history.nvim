@@ -97,8 +97,12 @@ return {
     -- Reduction takes effect on the next turn (the transcript scrollback is left
     -- as-is as a human-readable log). Available only while ami-history is loaded.
     local function compact(ctx)
-      ctx.append("\n\n_Compacting the conversation… (summarizing earlier turns)_\n")
-      tree.summarize_path(nil, function(ok, msg)
+      -- /compact            fold the whole conversation into a summary
+      -- /compact keep=2     keep the last 2 turns verbatim, summarize the rest
+      local keep = tonumber((ctx.args or ""):match("keep%s*=?%s*(%d+)")) or 0
+      local note = keep > 0 and (" (keeping the last " .. keep .. " turn(s) verbatim)") or ""
+      ctx.append("\n\n_Compacting the conversation…" .. note .. "_\n")
+      tree.summarize_path({ keep = keep }, function(ok, msg)
         if ok then
           ctx.append("\n_✓ " .. msg .. " — future turns will use it instead of the full history._\n")
         else
@@ -108,7 +112,10 @@ return {
     end
     api.on("chat.commands", function()
       return {
-        compact = { desc = "Summarize earlier turns into one summary to shrink future context", fn = compact },
+        compact = {
+          desc = "Summarize earlier turns to shrink future context (/compact [keep=N])",
+          fn = compact,
+        },
         compress = { desc = "Alias for /compact", fn = compact },
       }
     end)

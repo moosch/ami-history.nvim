@@ -201,20 +201,45 @@ function M.switch()
   vim.notify("ami: switched to branch at " .. id, vim.log.levels.INFO)
 end
 
---- Summarize the active path up to `boundary_id` (nil = the head, i.e. the whole
---- conversation), collapsing it into one summary so future requests carry the
---- summary instead of every turn. Does no UI itself — `cb(ok, message)` reports the
---- outcome so callers (the tree's `s` key, chat's /compact) render it their own way.
----@param boundary_id string|nil
+--- Summarize the active path up to a boundary, collapsing it into one summary so
+--- future requests carry the summary instead of every turn. Does no UI itself —
+--- `cb(ok, message)` reports the outcome so callers (the tree's `s` key, chat's
+--- /compact) render it their own way.
+---
+--- `opts` selects the boundary:
+---   { boundary_id = "nX" }  summarize up to that node (the tree's `s` key)
+---   { keep = N }            keep the last N turns (user+assistant pairs) verbatim
+---                           and summarize everything before them (N = 0 ⇒ the head,
+---                           i.e. the whole conversation). This is the default.
+--- A bare string is accepted as a boundary_id for convenience.
+---@param opts table|string|nil
 ---@param cb fun(ok: boolean, message: string)
-function M.summarize_path(boundary_id, cb)
+function M.summarize_path(opts, cb)
   cb = cb or function() end
+  if type(opts) == "string" then
+    opts = { boundary_id = opts }
+  end
+  opts = opts or {}
   local root, session = get_current()
   if not root then
     return cb(false, "no active session yet")
   end
   local sess = store:load(root, session)
-  local boundary = boundary_id or sess.head
+
+  local boundary = opts.boundary_id
+  if not boundary then
+    local path = store:path_nodes(sess) -- root → head
+    if #path == 0 then
+      return cb(false, "nothing to summarize yet")
+    end
+    local keep_nodes = (opts.keep or 0) * 2 -- a turn is a user + assistant pair
+    local idx = #path - keep_nodes
+    if idx < 1 then
+      return cb(false,
+        ("nothing to compact — only %d message(s), keeping the last %d turn(s)"):format(#path, opts.keep or 0))
+    end
+    boundary = path[idx].id
+  end
   if not boundary or boundary == "" then
     return cb(false, "nothing to summarize yet")
   end
@@ -261,7 +286,7 @@ function M.summarize()
     return
   end
   vim.notify("ami: summarizing up to " .. id .. "…", vim.log.levels.INFO)
-  M.summarize_path(id, function(ok, msg)
+  M.summarize_path({ boundary_id = id }, function(ok, msg)
     if ok then
       M.open(true)
       vim.notify("ami: " .. msg, vim.log.levels.INFO)

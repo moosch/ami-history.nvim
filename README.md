@@ -67,7 +67,9 @@ It also adds the **`/compact`** (alias `/compress`) chat slash-command: typed in
 [ami-chat](https://github.com/moosch/ami-chat.nvim) input, it summarizes the whole
 conversation so far into one summary — the same non-destructive fold as `s` in the
 tree, but up to the latest turn — so future turns carry the summary instead of every
-message. The originals stay on disk (switch back to a pre-summary branch in `:AmiTree`).
+message. Pass **`keep=N`** (e.g. `/compact keep=2`) to keep the last N turns
+(user+assistant pairs) verbatim and summarize only what came before them. The originals
+stay on disk (switch back to a pre-summary branch in `:AmiTree`).
 
 ## Configuration
 
